@@ -1,0 +1,808 @@
+swagger: '2.0'
+info:
+  title: NanoFlo Workflow API
+  description: API for nano-flo workflow engine
+  version: 0.1.0
+host: api.nano-flo.io
+schemes:
+  - http
+  - https
+basePath: /v1/workflow
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /process:
+    post:
+      summary: Create process
+      description: Create new workflow process
+      parameters:
+        - in: body
+          name: process
+          description: Payload of the workflow process to be created.
+          schema:
+            $ref: '#/definitions/Process'
+      tags:
+        - Processes
+      responses:
+        '201':
+          description: Created process
+          schema:
+            $ref: '#/definitions/Process'
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: List processes
+      description: List all processes
+      parameters:
+        - name: q
+          in: query
+          description: Query definition.
+          required: false
+          type: string
+          format: json
+        - name: fields
+          in: query
+          description: List of fields for projection.
+          required: false
+          type: string
+          format: json
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          description: Page to be fetched.
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          description: Number of records per page.
+      tags:
+        - Processes
+      responses:
+        '200':
+          description: List of processes
+          schema:
+            $ref: '#/definitions/Processes'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/processes/{id}':
+    get:
+      summary: Fetch process
+      description: Fetch process by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be fetched.
+        - name: includeAllVersions
+          in: query
+          description: >
+            Flag to indicate if all versions are to be included, default is
+            false
+
+            and returns only the mose recent version'
+          type: boolean
+          default: false
+      tags:
+        - Processes
+      responses:
+        '200':
+          description: Process matching the id passed in as parameter
+          schema:
+            $ref: '#/definitions/Process'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/processes/{id}/versions':
+    post:
+      summary: Create process version
+      description: Create new version of the process
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be updated.
+        - in: body
+          name: process
+          description: Process attributes to be updated.
+          schema:
+            $ref: '#/definitions/Process'
+      tags:
+        - Processes
+      responses:
+        '201':
+          description: Updated process
+          schema:
+            $ref: '#/definitions/Process'
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/processes/{id}/versions/{versionId}':
+    put:
+      summary: Update process version
+      description: >-
+        Update a process version. Note, only an un-sealed process version can be
+        updated
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be updated.
+        - in: path
+          name: versionId
+          required: true
+          type: string
+          minimum: 1
+          description: id of the version to be updated
+        - in: body
+          name: processVersion
+          description: Process version attributes to be updated.
+          schema:
+            $ref: '#/definitions/ProcessVersion'
+      tags:
+        - Processes
+      responses:
+        '200':
+          description: Updated process
+          schema:
+            $ref: '#/definitions/Process'
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete process version
+      description: >-
+        Delete a process. A process can be deleted only if there are no active
+        processInstances
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be deleted.
+        - in: path
+          name: versionId
+          required: true
+          type: string
+          minimum: 1
+          description: id of the version that needs to be deleted
+      tags:
+        - Processes
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/processes/{id}/versions/{versionId}/seal':
+    put:
+      summary: Seal process version
+      description: >-
+        Seal a process version, a sealed process version can be readily used for
+        processing
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be updated.
+        - in: path
+          name: versionId
+          required: true
+          type: string
+          minimum: 1
+          description: id of the version to be updated
+        - in: body
+          name: processVersion
+          description: Process version attributes to be updated.
+          schema:
+            $ref: '#/definitions/ProcessVersion'
+      tags:
+        - Processes
+      responses:
+        '200':
+          description: Updated & Sealed process
+          schema:
+            $ref: '#/definitions/Process'
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /processInstances:
+    post:
+      summary: Create process instance
+      description: Create new process instance
+      parameters:
+        - in: body
+          name: processInstance
+          description: ProcessInstance to be created.
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+      tags:
+        - Process Instances
+      responses:
+        '201':
+          description: Created process instance
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: List process instances
+      description: List all process instances
+      parameters:
+        - name: q
+          in: query
+          description: Query definition.
+          required: false
+          type: string
+          format: json
+        - name: fields
+          in: query
+          description: List of fields for projection.
+          required: false
+          type: string
+          format: json
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          description: Page to be fetched.
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          description: Number of records per page.
+      tags:
+        - Process Instances
+      responses:
+        '200':
+          description: List of processInstances
+          schema:
+            $ref: '#/definitions/ProcessInstances'
+        '400':
+          description: validation errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/processInstances/{id}':
+    get:
+      summary: Fetch process instance
+      description: Fetch process instance by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process instance to be fetched.
+      tags:
+        - Process Instances
+      responses:
+        '200':
+          description: A single process instance matching the id passed as parameter
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+        '404':
+          description: ProcessInstance with matching id not found at the server
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update process instance
+      description: Update process instance by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process instance to be updated.
+        - in: body
+          name: processInstance
+          description: The process instance to be updated.
+          schema:
+            $ref: '#/definitions/ProcessInstanceAction'
+      tags:
+        - Process Instances
+      responses:
+        '200':
+          description: Updated processInstance
+          schema:
+            $ref: '#/definitions/ProcessInstance'
+        '400':
+          description: Validation Errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete process instance
+      description: Delete process instance by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process instance to be deleted.
+      tags:
+        - Process Instances
+      responses:
+        '204':
+          description: Deleted process instance
+        '400':
+          description: Validation Errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /workItems:
+    post:
+      summary: Create workItem
+      description: Create new workItem
+      parameters:
+        - in: body
+          name: workItem
+          description: The workItem to be created.
+          schema:
+            $ref: '#/definitions/WorkItem'
+      tags:
+        - WorkItems
+      responses:
+        '201':
+          description: Created WorkItem
+          schema:
+            $ref: '#/definitions/WorkItem'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: List WorkItems
+      description: The list workItems endpoint provides api to list workItems.
+      parameters:
+        - name: q
+          in: query
+          description: Query definition.
+          required: false
+          type: string
+          format: json
+        - name: fields
+          in: query
+          description: List of fields for projection.
+          required: false
+          type: string
+          format: json
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          description: Page to be fetched.
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          description: Number of records per page.
+      tags:
+        - WorkItems
+      responses:
+        '200':
+          description: List of workItems
+          schema:
+            $ref: '#/definitions/WorkItems'
+        '400':
+          description: validation errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/workItems/{id}':
+    get:
+      summary: Fetch workItem
+      description: Fetch workItem by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the workItem to be fetched.
+      tags:
+        - WorkItems
+      responses:
+        '200':
+          description: A single workItem matching the id passed as parameter
+          schema:
+            $ref: '#/definitions/WorkItem'
+        '404':
+          description: WorkItem with matching id not found at the server
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update workItem
+      description: >-
+        Update workItem by id, note only the status of the workitem can be set
+        while updating.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the workItem to be fetched.
+        - in: body
+          name: workItem
+          description: The workItem to be updated.
+          schema:
+            $ref: '#/definitions/WorkItem'
+      tags:
+        - WorkItems
+      responses:
+        '200':
+          description: Updated workItem
+          schema:
+            $ref: '#/definitions/WorkItem'
+        '400':
+          description: Validation Errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete workItem
+      description: Delete workItem by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the workItem to be deleted.
+      tags:
+        - WorkItems
+      responses:
+        '204':
+          description: Deleted workItem
+        '400':
+          description: Validation Errors
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Process:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: Unique id of the process
+      name:
+        type: string
+        description: Process name
+      author:
+        type: string
+        description: Author name
+      versions:
+        type: array
+        items:
+          $ref: '#/definitions/ProcessVersion'
+      createdAt:
+        type: string
+        description: Created timestamp
+        format: isoDate
+      updatedAt:
+        type: string
+        format: isoDate
+        description: Updated timestamp
+      deletedAt:
+        type: string
+        format: isoDate
+        description: Deleted timestamp
+  Processes:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Process'
+      cursor:
+        $ref: '#/definitions/Cursor'
+  ProcessVersion:
+    type: object
+    properties:
+      number:
+        type: string
+        description: version number
+      isSealed:
+        type: boolean
+        description: Flag to indicate if the version has been sealed
+      states:
+        type: array
+        items:
+          $ref: '#/definitions/State'
+      author:
+        type: string
+        description: Author of the version
+      createdAt:
+        type: string
+        description: Created timestamp
+        format: isoDate
+      updatedAt:
+        type: string
+        format: isoDate
+        description: Updated timestamp
+      deletedAt:
+        type: string
+        format: isoDate
+        description: Deleted timestamp
+  State:
+    type: object
+    properties:
+      name:
+        type: string
+        description: State name
+      id:
+        type: string
+        description: Unique identifier for the state
+      type:
+        type: string
+        description: 'Type of state, such as start, activity, decision, join etc'
+        enum:
+          - start
+          - activity
+          - human-activiy
+          - join
+          - decision
+          - stop
+      predecessors:
+        type: array
+        description: Predecessor states that can transition to this state
+        items:
+          type: string
+      successors:
+        type: array
+        description: Successor states to which the current state can transition into
+        items:
+          type: string
+      access:
+        type: object
+        description: Access control for the state
+        properties:
+          owners:
+            type: array
+            description: Roles that can be owner of the state
+            items:
+              type: string
+          read:
+            type: array
+            description: Roles that have read access to the state
+            items:
+              type: string
+          write:
+            type: array
+            description: Roles that have write access to the state
+            items:
+              type: string
+      params:
+        type: array
+        description: Parameters to be passed into the state
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            isRequired:
+              type: boolean
+            defaultValue:
+              type: string
+      action:
+        type: string
+        description: Action to be performed in the state
+      onError:
+        type: string
+        description: Actions to perform in error
+        enum:
+          - retry
+          - stop
+      onSuccess:
+        description: 'Actions to perform on success [Create WorkItem, Update Status, etc]'
+        type: string
+  ProcessInstance:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: Unique process instance id
+      processId:
+        type: string
+        description: process id for the process instance
+      processName:
+        type: string
+        description: process name for the process instance
+      processVersion:
+        type: string
+        description: process version for the process instance
+      status:
+        type: string
+        description: Current state of the workitem
+        enum:
+          - started
+          - cancelled
+          - completed
+          - error
+      author:
+        type: string
+        description: Author of the proces instance
+      createdAt:
+        type: string
+        description: Created timestamp
+        format: isoDate
+      updatedAt:
+        type: string
+        format: isoDate
+        description: Updated timestamp
+      deletedAt:
+        type: string
+        format: isoDate
+        description: Deleted timestamp
+  ProcessInstances:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ProcessInstance'
+      cursor:
+        $ref: '#/definitions/Cursor'
+  ProcessInstanceAction:
+    type: object
+    properties:
+      fromState:
+        type: string
+        description: State from which the instance action was triggered
+      targetState:
+        type: string
+        description: State to transition
+      initiator:
+        type: string
+        description: initiator of the action it could be system or a specific user (role)
+      payload:
+        type: object
+        description: Payload for the action
+  WorkItem:
+    type: object
+    properties:
+      _id:
+        type: string
+        description: Unique id of the workitem
+      processId:
+        type: string
+        description: Process to which the work item belongs to
+      processName:
+        type: string
+        description: Process name
+      processVersion:
+        type: string
+        description: Version of the process
+      processInstanceId:
+        type: string
+        description: Process to which the work item belongs to
+      status:
+        type: string
+        description: Current status of the workitem
+        enum:
+          - started
+          - cancelled
+          - completed
+          - error
+      state:
+        type: string
+        description: Process state to which the workitem belongs to
+      owners:
+        type: array
+        description: Roles having access to the work item
+        items:
+          type: string
+      viewers:
+        type: array
+        description: Roles having readonly access
+        items:
+          type: string
+      notes:
+        type: string
+        description: Notes related to the workitem
+      payload:
+        type: object
+        description: Workitem payload
+  WorkItems:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/WorkItem'
+      cursor:
+        $ref: '#/definitions/Cursor'
+  Cursor:
+    type: object
+    properties:
+      currentPage:
+        type: integer
+        format: int32
+      perPage:
+        type: integer
+        format: int32
+      totalRecords:
+        type: integer
+        format: int32
+      totalPages:
+        type: integer
+        format: int32
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+
