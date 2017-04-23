@@ -1,0 +1,30 @@
+{
+  "name": "nano-flo-server",
+  "version": "0.1.0",
+  "description": "REST API server for nano-flo workflow engine",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "koajs",
+    "workflow",
+    "engine",
+    "api"
+  ],
+  "author": "Hari Narasimhan <harin76@gmail.com> (https://github.com/harin76)",
+  "license": "MIT",
+  "dependencies": {
+    "koa": "2.2.0",
+    "koa-body": "2.0.0",
+    "koa-mongo": "git+https://github.com/nswbmw/koa-mongo.git#master",
+    "koa-morgan": "1.0.1",
+    "koa-mount": "3.0.0",
+    "koa-router": "7.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "1.11.0"
+  }
+}

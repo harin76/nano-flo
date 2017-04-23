@@ -13,7 +13,7 @@ consumes:
 produces:
   - application/json
 paths:
-  /process:
+  /processes:
     post:
       summary: Create process
       description: Create new workflow process
@@ -138,6 +138,33 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   '/processes/{id}/versions/{versionId}':
+    get:
+      summary: Fetch process version
+      description: Fetch process version by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          minimum: 1
+          description: The id of the process to be fetched.
+        - in: path
+          name: versionId
+          required: true
+          type: string
+          minimum: 1
+          description: id of the version to be updated
+      tags:
+        - Processes
+      responses:
+        '200':
+          description: Process matching the id passed in as parameter
+          schema:
+            $ref: '#/definitions/Process'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
     put:
       summary: Update process version
       description: >-
