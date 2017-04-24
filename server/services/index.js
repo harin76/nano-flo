@@ -1,3 +1,3 @@
-'use strict';
+'use strict'
 
-exports.v1 = require('./v1');
+exports.v1 = require('./v1')

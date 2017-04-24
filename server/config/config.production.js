@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-let config = require('./config.global');
+let config = require('./config.global')
 
-config.env = 'production';
-config.mongo.dbName = config.mongo.dbName + '_prod';
+config.env = 'production'
+config.mongo.dbName = config.mongo.dbName + '_prod'
 
-module.exports = config;
+module.exports = config

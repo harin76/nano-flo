@@ -17,6 +17,8 @@
   "author": "Hari Narasimhan <harin76@gmail.com> (https://github.com/harin76)",
   "license": "MIT",
   "dependencies": {
+    "await-to-js": "1.0.1",
+    "joi": "10.4.1",
     "koa": "2.2.0",
     "koa-body": "2.0.0",
     "koa-mongo": "git+https://github.com/nswbmw/koa-mongo.git#master",
@@ -25,6 +27,12 @@
     "koa-router": "7.1.1"
   },
   "devDependencies": {
+    "eslint": "3.19.0",
+    "eslint-config-standard": "10.2.1",
+    "eslint-plugin-import": "2.2.0",
+    "eslint-plugin-node": "4.2.2",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-standard": "3.0.1",
     "nodemon": "1.11.0"
   }
 }

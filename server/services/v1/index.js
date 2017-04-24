@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-const Router = require('koa-router');
-const router = new Router();
+const Router = require('koa-router')
+const router = new Router()
 
-require('./processes').register(router);
+require('./processes').register(router)
 
-module.exports = router.middleware(); 
+module.exports = router.middleware()
