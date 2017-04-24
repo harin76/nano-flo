@@ -831,5 +831,6 @@ definitions:
       message:
         type: string
       fields:
-        type: string
-
+        type: array
+        items:
+          type: object
