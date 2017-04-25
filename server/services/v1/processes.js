@@ -7,7 +7,7 @@ const create = async function (ctx, next) {
   ctx.status = 201
 
   const [error, process] = await
-                  to(Process.create(ctx, ctx.request.params, ctx.request.body))
+                  to(Process.create(ctx, ctx.params, ctx.request.body))
 
   if (error || process.error) {
     ctx.status = 400
@@ -21,50 +21,98 @@ const create = async function (ctx, next) {
 
 const find = async function (ctx, next) {
   ctx.status = 200
-  // TODO merge query and params into single object
-  try {
-    const values = await Process.find(ctx, ctx.request.params)
-    ctx.body = values
-  } catch (error) {
+  const [error, result] = await to(Process.find(ctx, ctx.params, ctx.query))
+
+  if (error || result.error) {
     ctx.status = 400
-    ctx.body = error
+    ctx.body = error || result.error
+  } else {
+    ctx.body = result
   }
+
   return next()
 }
 
 const findById = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'findById::To be implemented'
+  ctx.status = 200
+  const [error, result] = await to(Process.findById(ctx, ctx.params, ctx.query))
+
+  if (error || result.error) {
+    ctx.status = 400
+    ctx.body = error || result.error
+  } else {
+    if (!result) { ctx.status = 404 }
+    ctx.body = result
+  }
+
   return next()
 }
 
 const createProcessVersion = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'createProcessVersion::To be implemented'
+  ctx.status = 201
+
+  const [error, process] = await
+                  to(Process.createProcessVersion(ctx, ctx.params, ctx.request.body))
+
+  if (error || process.error) {
+    ctx.status = 400
+    ctx.body = error || process.error
+  } else {
+    ctx.body = process
+  }
   return next()
 }
 
 const findProcessVersionById = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'findProcessVersionById::To be implemented'
+  ctx.status = 200
+  const [error, result] = await to(Process.findProcessVersionById(ctx, ctx.params, ctx.query))
+
+  if (error || result.error) {
+    ctx.status = 400
+    ctx.body = error || result.error
+  } else {
+    if (!result) { ctx.status = 404 }
+    ctx.body = result
+  }
   return next()
 }
 
 const updateProcessVersion = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'updateProcessVersion::To be implemented'
+  const [error, process] = await
+                  to(Process.updateProcessVersion(ctx, ctx.params, ctx.request.body))
+
+  if (error || process.error) {
+    ctx.status = 400
+    ctx.body = error || process.error
+  } else {
+    ctx.body = process
+  }
   return next()
 }
 
 const deleteProcessVersion = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'deleteProcessVersion::To be implemented'
+  const [error, process] = await
+                  to(Process.deleteProcessVersion(ctx, ctx.params))
+
+  if (error || process.error) {
+    ctx.status = 400
+    ctx.body = error || process.error
+  } else {
+    ctx.body = process
+  }
   return next()
 }
 
 const sealProcessVersion = async function (ctx, next) {
-  ctx.status = 400
-  ctx.body = 'sealProcessVersion::To be implemented'
+  const [error, process] = await
+                  to(Process.sealProcessVersion(ctx, ctx.params))
+
+  if (error || process.error) {
+    ctx.status = 400
+    ctx.body = error || process.error
+  } else {
+    ctx.body = process
+  }
   return next()
 }
 
@@ -91,5 +139,5 @@ exports.register = (router) => {
   router.delete('/processes/:id/versions/:versionId', deleteProcessVersion)
 
   // PUT api/v1/workflow/processes/:id/versions/:versionId/seal
-  router.post('/processes/:id/versions/:versionId/seal', koaBody, sealProcessVersion)
+  router.put('/processes/:id/versions/:versionId/seal', koaBody, sealProcessVersion)
 }
