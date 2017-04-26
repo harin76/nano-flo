@@ -1,5 +1,4 @@
 'use strict'
-const VALIDATION_ERROR = 'Validtion error'
 
 class ErrorMessage {
   static createFromJoi (error, joiError) {
