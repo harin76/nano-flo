@@ -1,9 +1,19 @@
 'use strict'
 const Koa = require('koa')
 const mount = require('koa-mount')
-const mongo = require('koa-mongo')
 const morgan = require('koa-morgan')
 const config = require('./config')
+
+const mongoOpts = {
+  host: config.mongo.host,
+  max: 5,
+  min: 1,
+  timeout: 30000,
+  logout: false
+}
+
+// init the connection pool
+require('./core/connectionMgr').init(mongoOpts)
 
 const app = new Koa()
 
@@ -20,17 +30,11 @@ app.use(morgan('combined'))
 // }
 
 async function setTenant (ctx, next) {
-  ctx.tenant = config.mongo.dbName || 'default'
+  const domain = ctx.subdomains[4]
+  console.log(domain)
+  ctx.tenant = domain || 'default'
   await next()
 }
-
-app.use(mongo({
-  host: config.mongo.host,
-  max: 5,
-  min: 1,
-  timeout: 30000,
-  logout: false
-}))
 
 // app.use(validateDomain)
 app.use(setTenant)

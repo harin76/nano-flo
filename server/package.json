@@ -18,6 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "await-to-js": "1.0.1",
+    "generic-pool": "3.1.7",
     "joi": "10.4.1",
     "koa": "2.2.0",
     "koa-body": "2.0.0",

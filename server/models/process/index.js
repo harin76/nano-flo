@@ -1,16 +1,15 @@
 'use strict'
 const to = require('await-to-js').default
 const _ = require('lodash')
-const ObjectID = require('mongodb').ObjectID
 const ErrorMessage = require('../../utils/errorMessage')
 const Errors = require('./errors')
 const Schema = require('./schema')
 const COLLECTION = 'processes'
+const DB = require('../../db')
 
 class Process {
   static create (ctx, params, data) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
       let process, result
       let {error, value} = Schema.validateProcess(data)
 
@@ -20,7 +19,7 @@ class Process {
         })
       }
 
-      [error, process] = await to(collection.findOne({name: value.name}))
+      [error, process] = await to(DB.findOne(ctx.tenant, COLLECTION, {name: value.name}))
 
       if (error) {
         return resolve({error: Errors.UNKNOWN})
@@ -30,7 +29,7 @@ class Process {
         return resolve({error: Errors.PROCESS_ALREADY_EXISTS})
       }
 
-      [error, result] = await to(collection.insert(value))
+      [error, result] = await to(DB.insert(ctx.tenant, COLLECTION, value))
 
       if (error) {
         return resolve({error: Errors.UNKNOWN})
@@ -42,9 +41,7 @@ class Process {
 
   static find (ctx, params, query) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
-      let error, processes
-      [error, processes] = await to(collection.find().toArray())
+      const [error, processes] = await to(DB.find(ctx.tenant, COLLECTION))
       if (error) {
         return resolve({error: Errors.UNKNOWN})
       }
@@ -54,9 +51,8 @@ class Process {
 
   static findById (ctx, params, query) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
       let error, process
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKNOWN})
@@ -74,7 +70,6 @@ class Process {
 
   static createProcessVersion (ctx, params, data) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
       let process
       let {error, value} = Schema.validateProcessVersion(data)
 
@@ -84,7 +79,7 @@ class Process {
         })
       }
 
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKNOWN})
@@ -102,8 +97,10 @@ class Process {
 
       value.author = value.author || 'system';
 
-      [error, process] = await to(collection.findOneAndUpdate(
-        {_id: ObjectID(params.id)},
+      [error, process] = await to(DB.findOneAndUpdate(
+        ctx.tenant,
+        COLLECTION,
+        params.id,
         {$push: {versions: value}},
         {returnOriginal: false}
       ))
@@ -118,8 +115,6 @@ class Process {
 
   static findProcessVersionById (ctx, params) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
-
       let error, process
       const versionToFetch = parseInt(params.versionId)
 
@@ -127,7 +122,7 @@ class Process {
         return resolve({error: Errors.INVALID_PROCESS_VERSION_NUMBER})
       }
 
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKOWN})
@@ -147,8 +142,6 @@ class Process {
 
   static updateProcessVersion (ctx, params, data) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
-
       let process
       const versionToFetch = parseInt(params.versionId)
 
@@ -164,7 +157,7 @@ class Process {
         })
       }
 
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKOWN})
@@ -191,8 +184,10 @@ class Process {
           return v
         }
       });
-      [error, process] = await to(collection.findOneAndUpdate(
-        {_id: ObjectID(params.id)},
+      [error, process] = await to(DB.Update(
+        ctx.tenant,
+        COLLECTION,
+        params.id,
         {$set: {versions}},
         {returnOriginal: false} // Get the updated document
       ))
@@ -207,8 +202,6 @@ class Process {
 
   static deleteProcessVersion (ctx, params) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
-
       let error, process
       const versionToFetch = parseInt(params.versionId)
 
@@ -216,7 +209,7 @@ class Process {
         return resolve({error: Errors.INVALID_PROCESS_VERSION_NUMBER})
       }
 
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKOWN})
@@ -238,8 +231,10 @@ class Process {
 
       const versions = process.versions.filter((v) => v.number !== versionToFetch);
 
-      [error] = await to(collection.findOneAndUpdate(
-        {_id: ObjectID(params.id)},
+      [error] = await to(DB.findOneAndUpdate(
+        ctx.tenant,
+        COLLECTION,
+        params.id,
         {$set: {versions}}
       ))
 
@@ -249,8 +244,6 @@ class Process {
 
   static sealProcessVersion (ctx, params) {
     return new Promise(async (resolve, reject) => {
-      const collection = ctx.mongo.db(ctx.tenant).collection(COLLECTION)
-
       let error, process
       const versionToFetch = parseInt(params.versionId)
 
@@ -258,7 +251,7 @@ class Process {
         return resolve({error: Errors.INVALID_PROCESS_VERSION_NUMBER})
       }
 
-      [error, process] = await to(collection.findOne({_id: ObjectID(params.id)}))
+      [error, process] = await to(DB.findById(ctx.tenant, COLLECTION, params.id))
 
       if (error) {
         return resolve({error: Errors.UNKOWN})
@@ -285,8 +278,10 @@ class Process {
         return v
       });
 
-      [error, process] = await to(collection.findOneAndUpdate(
-        {_id: ObjectID(params.id)},
+      [error, process] = await to(DB.update(
+        ctx.tenant,
+        COLLECTION,
+        params.id,
         {$set: {versions}},
         {returnOriginal: false}
       ))
